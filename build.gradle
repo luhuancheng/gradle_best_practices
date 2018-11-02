@@ -1,0 +1,88 @@
+buildscript {
+    // 读取统一依赖变量
+    apply from: './library.gradle'
+    // 定义仓库
+    repositories {
+        mavenLocal()
+        maven {
+            url HhhtPublic
+            credentials {
+                username HhhtNexusUserName
+                password HhhtNexusPassword
+            }
+        }
+    }
+    // 项目公共变量
+    def globalConf = rootProject.ext
+    
+    // 为构建脚本添加外部依赖
+    dependencies {
+        Map<String, String> commonDependencies = globalConf.commonDependencies
+        classpath(commonDependencies.springBootGradlePlugin)
+    }
+}
+
+// 定义所有项目公共配置
+allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    // 统一构件名称和版本号
+    group = 'com.luhc.gradle'
+    version = '1.0'
+
+    // spring统一依赖管理
+    apply plugin: 'io.spring.dependency-management'
+    
+    // 发布构建到maven私服的配置
+    apply plugin: 'maven-publish'
+    // 生成源码包
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allJava
+        classifier = 'sources'
+    }
+    // 生成javadoc
+    task javadocJar(type: Jar) {
+        from javadoc
+        classifier = 'javadoc'
+    }
+    publishing {
+        // 定义要publish的构件,此处为hhhtPublish。构件为jar包形式
+        publications {
+            hhhtPublish(MavenPublication) {
+                from components.java // jar包形式
+                // from components.web  // war包形式，使用这个配置需要增加war插件
+                artifact sourcesJar // 发布源码包
+                artifact javadocJar // 发布javadoc
+            }
+        }
+        repositories {
+            maven {
+                name = "hhhtNexus"
+                // 如果项目版本以SNAPSHOT结尾，那么发布到nexu私服的snashot仓库去，其他情况发布到release仓库去
+                url = project.version.endsWith('-SNAPSHOT') ? HhhtSnapShots : HhhtReleases
+                credentials {
+                    username HhhtNexusUserName
+                    password HhhtNexusPassword
+                }
+            }
+        }
+    }
+}
+
+// 定义子项目公共配置
+subprojects {
+    repositories {
+        mavenLocal()
+        maven {
+            url HhhtPublic
+            credentials {
+                username HhhtNexusUserName
+                password HhhtNexusPassword
+            }
+        }
+    }
+
+    // 应用springboot插件, 创建一个可执行jar包
+    apply plugin: 'org.springframework.boot'
+}

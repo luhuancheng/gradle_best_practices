@@ -1,0 +1,17 @@
+// 只构建为一个普通的jar包
+jar {
+    enabled = true
+}
+bootJar {
+    enabled = false
+}
+
+def globalConf = rootProject.ext
+
+dependencies {
+    // 统一依赖定义
+    Map<String, String> commonDependencies = globalConf.commonDependencies
+    
+    implementation(commonDependencies.apollo)
+    compileOnly('org.projectlombok:lombok')
+}

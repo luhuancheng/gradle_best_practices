@@ -1,0 +1,11 @@
+ext {
+    junitVersion = "4.12"
+    apolloVersion = "0.11.0-SNAPSHOT"
+    springBootVersion = '2.0.6.RELEASE'
+    
+    commonDependencies = [
+            springBootGradlePlugin      : "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",
+            apollo                      : "com.ctrip.framework.apollo:apollo-client:$apolloVersion",
+            junit                       : "junit:junit:$junitVersion"
+    ]
+}
